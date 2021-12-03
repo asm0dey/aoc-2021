@@ -1,9 +1,8 @@
 fun main() {
     fun part1(input: List<String>): Int {
-        val size = input[0].length
         val freq = StringBuilder()
         val rare = StringBuilder()
-        for (i in 0 until size) {
+        for (i in input[0].indices) {
             val zeros = input.count { it[i] == '0' }
             val ones = input.size - zeros
             freq.append(if (zeros > ones) '0' else '1')
@@ -13,11 +12,10 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        val size = input[0].length
 
         fun findOnly(mostFrequent: Boolean): Int {
             val copy = input.toMutableList()
-            for (i in 0 until size) {
+            for (i in input[0].indices) {
                 val zeros = copy.count { it[i] == '0' }
                 val ones = copy.size - zeros
                 val toKeep =
