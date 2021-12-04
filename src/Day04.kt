@@ -1,20 +1,29 @@
+import kotlin.properties.Delegates.notNull
+
+private typealias Board = List<IntArray>
+
 fun main() {
-    fun parseInput(input: List<String>): Pair<List<Int>, MutableList<List<MutableList<Int>>>> {
+    fun parseInput(input: List<String>): Pair<List<Int>, MutableList<Board>> {
         val calledNumbers = input[0].split(',').map { it.toInt() }
-        val boards = input.subList(2, input.size).chunked(6)
-            .map { it.dropLast(1) }
+        val boards = input
+            .asSequence()
+            .drop(2)
+            .chunked(6)
+            .map { it.subList(0, 5) }
             .map { boardStrings ->
-                boardStrings.map { row ->
-                    row.chunked(3) { num ->
-                        num.trim().toString().toInt()
-                    }.toMutableList()
-                }
-            }.toMutableList()
+                boardStrings
+                    .map { row ->
+                        row
+                            .chunked(3) { num -> num.trim().toString().toInt() }
+                            .toIntArray()
+                    }
+            }
+            .toMutableList()
         return Pair(calledNumbers, boards)
     }
 
-    fun List<MutableList<Int>>.boardScore(calledNumber: Int) =
-        flatten().filter { it != -1 }.sum() * calledNumber
+    fun Board.boardScore(calledNumber: Int) =
+        flatMap { it.asSequence() }.filter { it != -1 }.sum() * calledNumber
 
 
     fun part1(input: List<String>): Int {
@@ -45,8 +54,8 @@ fun main() {
 
     fun part2(input: List<String>): Int {
         val (calledNumbers, boards) = parseInput(input)
-        var lastCall = 0
-        var latestBoard = listOf<MutableList<Int>>()
+        var lastCall by notNull<Int>()
+        var latestBoard by notNull<Board>()
         for (calledNumber in calledNumbers) {
             lastCall = calledNumber
             for (board in boards) {
@@ -55,22 +64,15 @@ fun main() {
                     if (index >= 0) row[index] = -1
                 }
             }
-            val toRemove = hashSetOf<List<MutableList<Int>>>()
-            for (board in boards) {
-                for (row in board) {
-                    if (row.all { it == -1 }) {
-                        toRemove.add(board)
-                        latestBoard = board
-                    }
+            boards
+                .filter { board ->
+                    board.any { row -> row.all { it == -1 } } ||
+                            board.indices.any { col -> board.map { it[col] }.all { it == -1 } }
                 }
-                for (i in board.indices) {
-                    if (board.map { it[i] }.all { it == -1 }) {
-                        toRemove.add(board)
-                        latestBoard = board
-                    }
+                .forEach {
+                    boards.remove(it)
+                    latestBoard = it
                 }
-            }
-            boards.removeAll(toRemove)
             if (boards.isEmpty()) break
         }
 
@@ -84,7 +86,7 @@ fun main() {
     val input = readInput("Day04")
     println(part1(input))
 
-    check(part2(testInput)==1924)
+    check(part2(testInput) == 1924)
     println(part2(input))
 }
 
