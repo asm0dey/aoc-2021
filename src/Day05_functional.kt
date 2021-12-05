@@ -1,21 +1,26 @@
 import kotlin.math.max
 import kotlin.math.min
 
-private typealias Point = Pair<Int, Int>
 private typealias Line = Sequence<Point>
 
+@JvmInline
+value class Point(private val p: Pair<Int, Int>) {
+    constructor(x: Int, y: Int) : this(x to y)
+
+    val x get() = p.first
+    val y get() = p.second
+}
+
 fun main() {
-    fun Point.x() = first
-    fun Point.y() = second
 
     operator fun Point.rangeTo(p: Point): Line {
-        val ys = (min(y(), p.y())..max(y(), p.y())).asSequence()
-        val xs = (min(x(), p.x())..max(x(), p.x())).asSequence()
-        val ysDown = (max(y(), p.y()) downTo min(y(), p.y())).asSequence()
-        return if (x() == p.x()) ys.map { x() to it }
-        else if (y() == p.y()) xs.map { it to y() }
-        else if (x() - p.x() == y() - p.y()) xs.zip(ys)
-        else xs.zip(ysDown)
+        val ys = (min(y, p.y)..max(y, p.y)).asSequence()
+        val xs = (min(x, p.x)..max(x, p.x)).asSequence()
+        val ysDown = (max(y, p.y) downTo min(y, p.y)).asSequence()
+        return (if (x == p.x) ys.map { x to it }
+        else if (y == p.y) xs.map { it to y }
+        else if (x - p.x == y - p.y) xs.zip(ys)
+        else xs.zip(ysDown)).map { Point(it) }
     }
 
     fun part1(input: List<String>) = input
