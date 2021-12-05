@@ -1,48 +1,51 @@
-private data class Point(val x: Int, val y: Int)
-
-@Suppress("unused")
-private fun printField(field: HashMap<Point, Int>) {
-    val maxX = field.keys.maxByOrNull { it.x }!!
-    val maxY = field.keys.maxByOrNull { it.y }!!
-    for (y in 0..maxY.y) {
-        for (x in 0..maxX.x) {
-            print(field[Point(x, y)] ?: ".")
-        }
-        print("\n")
-    }
-}
-
 fun main() {
+    data class Point(val x: Int, val y: Int)
+
+    @Suppress("unused")
+    fun HashMap<Point, Int>.print() {
+        val maxX = keys.maxByOrNull { it.x }!!
+        val maxY = keys.maxByOrNull { it.y }!!
+        for (y in 0..maxY.y) {
+            for (x in 0..maxX.x) {
+                print(this[Point(x, y)] ?: ".")
+            }
+            print("\n")
+        }
+    }
+
+    fun HashMap<Point, Int>.updatePoint(x: Int, y: Int) {
+        val point = Point(x, y)
+        if (this[point] == null) this[point] = 0
+        this[point] = this[point]!! + 1
+    }
+
+    fun readPoints(input: List<String>) = input
+        .asSequence()
+        .map { it.split("->") }
+        .map { (a, b) -> a.trim() to b.trim() }
+        .map { (a, b) ->
+            a.split(',').map { it.toInt() } to
+                    b.split(',').map { it.toInt() }
+        }
+        .map { (a, b) -> Point(a[0], a[1]) to Point(b[0], b[1]) }
 
     fun part1(input: List<String>): Int {
 
         val field = hashMapOf<Point, Int>()
 
-        val lines = input
-            .asSequence()
-            .map { it.split("->") }
-            .map { (a, b) -> a.trim() to b.trim() }
-            .map { (a, b) ->
-                a.split(',').map { it.toInt() } to
-                        b.split(',').map { it.toInt() }
-            }
-            .map { (a, b) -> Point(a[0], a[1]) to Point(b[0], b[1]) }.filter { (a, b) -> a.x == b.x || a.y == b.y }
+        val lines = readPoints(input)
+            .filter { (a, b) -> a.x == b.x || a.y == b.y }
             .toList()
 
         for ((start, finish) in lines) {
-            if (start.x == finish.x) {
-                for (i in minOf(start.y, finish.y)..maxOf(start.y, finish.y)) {
-                    field.compute(Point(start.x, i)) { _, current ->
-                        if (current == null) 1 else current + 1
-                    }
-                }
-            } else if (start.y == finish.y) {
-                for (i in minOf(start.x, finish.x)..maxOf(start.x, finish.x)) {
-                    field.compute(Point(i, start.y)) { _, current ->
-                        if (current == null) 1 else current + 1
-                    }
-                }
-            }
+            val minX = minOf(start.x, finish.x)
+            val minY = minOf(start.y, finish.y)
+            val maxX = maxOf(start.x, finish.x)
+            val maxY = maxOf(start.y, finish.y)
+
+            for (x in minX..maxX)
+                for (y in minY..maxY)
+                    field.updatePoint(x, y)
         }
         return field.values.count { it > 1 }
     }
@@ -52,58 +55,34 @@ fun main() {
 
         val field = hashMapOf<Point, Int>()
 
-        val lines = input
-            .asSequence()
-            .map { it.split("->") }
-            .map { (a, b) -> a.trim() to b.trim() }
-            .map { (a, b) ->
-                a.split(',').map { it.toInt() } to
-                        b.split(',').map { it.toInt() }
-            }
-            .map { (a, b) -> Point(a[0], a[1]) to Point(b[0], b[1]) }
+        val lines = readPoints(input)
             .toList()
 
         for ((start, finish) in lines) {
-            if (start.x == finish.x) {
-                for (i in minOf(start.y, finish.y)..maxOf(start.y, finish.y)) {
-                    field.compute(Point(start.x, i)) { _, current ->
-                        if (current == null) 1 else current + 1
-                    }
-                }
-            } else if (start.y == finish.y) {
-                for (i in minOf(start.x, finish.x)..maxOf(start.x, finish.x)) {
-                    field.compute(Point(i, start.y)) { _, current ->
-                        if (current == null) 1 else current + 1
-                    }
+            var minX = minOf(start.x, finish.x)
+            var minY = minOf(start.y, finish.y)
+            val maxX = maxOf(start.x, finish.x)
+            var maxY = maxOf(start.y, finish.y)
+
+            if (start.x == finish.x || start.y == finish.y) {
+                for (x in minX..maxX)
+                    for (y in minY..maxY)
+                        field.updatePoint(x, y)
+            } else if (start.x - finish.x == start.y - finish.y) {
+                while (minX <= maxX) {
+                    field.updatePoint(minX, minY)
+                    minX++
+                    minY++
                 }
             } else {
-                var minX = minOf(start.x, finish.x)
-                var minY = minOf(start.y, finish.y)
-                val maxX = maxOf(start.x, finish.x)
-                var maxY = maxOf(start.y, finish.y)
-                if ((start.x < finish.x && start.y < finish.y) || (start.x > finish.x && start.y > finish.y)) {
-                    while (minX <= maxX) {
-                        field.compute(Point(minX, minY)) { _, current ->
-                            if (minX == 0 && minY == 0) println(start to finish)
-                            if (current == null) 1 else current + 1
-                        }
-                        minX++
-                        minY++
-                    }
-                } else {
-                    while (minX <= maxX) {
-                        field.compute(Point(minX, maxY)) { _, current ->
-                            if (minX == 0 && maxY == 0) println(start to finish)
-                            if (current == null) 1 else current + 1
-                        }
-                        minX++
-                        maxY--
-                    }
+                while (minX <= maxX) {
+                    field.updatePoint(minX, maxY)
+                    minX++
+                    maxY--
                 }
             }
         }
         return field.values.count { it > 1 }
-
     }
 
     // test if implementation meets criteria from the description, like:
