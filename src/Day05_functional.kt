@@ -5,29 +5,27 @@ private typealias Point = Pair<Int, Int>
 private typealias Line = Sequence<Point>
 
 fun main() {
-    fun Point.getX() = first
-    fun Point.getY() = second
+    fun Point.x() = first
+    fun Point.y() = second
 
     operator fun Point.rangeTo(p: Point): Line {
-        val ys = (min(getY(), p.getY())..max(getY(), p.getY())).asSequence()
-        val xs = (min(getX(), p.getX())..max(getX(), p.getX())).asSequence()
-        val ysDown = (max(getY(), p.getY()) downTo min(getY(), p.getY())).asSequence()
-        return if (getX() == p.getX()) ys.map { getX() to it }
-        else if (getY() == p.getY()) xs.map { it to getY() }
-        else if (getX() - p.getX() == getY() - p.getY()) xs.zip(ys)
+        val ys = (min(y(), p.y())..max(y(), p.y())).asSequence()
+        val xs = (min(x(), p.x())..max(x(), p.x())).asSequence()
+        val ysDown = (max(y(), p.y()) downTo min(y(), p.y())).asSequence()
+        return if (x() == p.x()) ys.map { x() to it }
+        else if (y() == p.y()) xs.map { it to y() }
+        else if (x() - p.x() == y() - p.y()) xs.zip(ys)
         else xs.zip(ysDown)
     }
 
-    fun part1(input: List<String>): Int {
-        return input
-            .asSequence()
-            .map { it.split(" -> ", ",").map { it.toInt() } }
-            .filter { (x0, y0, x1, y1) -> x0 == x1 || y0 == y1 }
-            .flatMap { (x0, y0, x1, y1) -> Point(x0, y0)..Point(x1, y1) }
-            .groupingBy { it }
-            .eachCount()
-            .count { it.value > 1 }
-    }
+    fun part1(input: List<String>) = input
+        .asSequence()
+        .map { it.split(" -> ", ",").map { it.toInt() } }
+        .filter { (x0, y0, x1, y1) -> x0 == x1 || y0 == y1 }
+        .flatMap { (x0, y0, x1, y1) -> Point(x0, y0)..Point(x1, y1) }
+        .groupingBy { it }
+        .eachCount()
+        .count { it.value > 1 }
 
 
     fun part2(input: List<String>) = input
