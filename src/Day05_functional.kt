@@ -2,33 +2,20 @@ import kotlin.math.max
 import kotlin.math.min
 
 private typealias Point = Pair<Int, Int>
-
-private val Point.x
-    get() = first
-private val Point.y
-    get() = second
+private typealias Line = Sequence<Point>
 
 fun main() {
-    operator fun Point.rangeTo(p: Point): Sequence<Point> {
-        val ys = (min(y, p.y)..max(y, p.y)).asSequence()
-        val xs = (min(x, p.x)..max(x, p.x)).asSequence()
-        val ysDown = (max(y, p.y) downTo min(y, p.y)).asSequence()
-        return if (x == p.x) ys.map { x to it }
-        else if (y == p.y) xs.map { it to y }
-        else if (x - p.x == y - p.y) xs.zip(ys).map { (a, b) -> a to b }
-        else xs.zip(ysDown).map { (a, b) -> a to b }
-    }
+    fun Point.getX() = first
+    fun Point.getY() = second
 
-    @Suppress("unused")
-    fun HashMap<Point, Int>.print() {
-        val maxX = keys.maxByOrNull { it.x }!!
-        val maxY = keys.maxByOrNull { it.y }!!
-        for (y in 0..maxY.y) {
-            for (x in 0..maxX.x) {
-                print(this[x to y] ?: ".")
-            }
-            print("\n")
-        }
+    operator fun Point.rangeTo(p: Point): Line {
+        val ys = (min(getY(), p.getY())..max(getY(), p.getY())).asSequence()
+        val xs = (min(getX(), p.getX())..max(getX(), p.getX())).asSequence()
+        val ysDown = (max(getY(), p.getY()) downTo min(getY(), p.getY())).asSequence()
+        return if (getX() == p.getX()) ys.map { getX() to it }
+        else if (getY() == p.getY()) xs.map { it to getY() }
+        else if (getX() - p.getX() == getY() - p.getY()) xs.zip(ys)
+        else xs.zip(ysDown)
     }
 
     fun part1(input: List<String>): Int {
@@ -40,9 +27,8 @@ fun main() {
                         b.split(',').map { it.toInt() }
             }
             .map { (a, b) -> Point(a[0], a[1]) to Point(b[0], b[1]) }
-            .filter { (a, b) -> a.x == b.x || a.y == b.y }
-            .map { (a, b) -> a..b }
-            .flatten()
+            .filter { (a, b) -> a.getX() == b.getX() || a.getY() == b.getY() }
+            .flatMap { (a, b) -> a..b }
             .groupingBy { it }
             .eachCount()
             .count { it.value > 1 }
@@ -55,8 +41,7 @@ fun main() {
         .map { (a, b) ->
             a.split(',').map { it.toInt() } to b.split(',').map { it.toInt() }
         }
-        .map { (a, b) -> Point(a[0], a[1])..Point(b[0], b[1]) }
-        .flatten()
+        .flatMap { (a, b) -> Point(a[0], a[1])..Point(b[0], b[1]) }
         .groupingBy { it }
         .eachCount()
         .count { it.value > 1 }
