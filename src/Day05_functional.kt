@@ -21,14 +21,9 @@ fun main() {
     fun part1(input: List<String>): Int {
         return input
             .asSequence()
-            .map { it.split("->").map { it.trim() } }
-            .map { (a, b) ->
-                a.split(',').map { it.toInt() } to
-                        b.split(',').map { it.toInt() }
-            }
-            .map { (a, b) -> Point(a[0], a[1]) to Point(b[0], b[1]) }
-            .filter { (a, b) -> a.getX() == b.getX() || a.getY() == b.getY() }
-            .flatMap { (a, b) -> a..b }
+            .map { it.split(" -> ", ",").map { it.toInt() } }
+            .filter { (x0, y0, x1, y1) -> x0 == x1 || y0 == y1 }
+            .flatMap { (x0, y0, x1, y1) -> Point(x0, y0)..Point(x1, y1) }
             .groupingBy { it }
             .eachCount()
             .count { it.value > 1 }
@@ -37,11 +32,8 @@ fun main() {
 
     fun part2(input: List<String>) = input
         .asSequence()
-        .map { it.split("->").map { it.trim() } }
-        .map { (a, b) ->
-            a.split(',').map { it.toInt() } to b.split(',').map { it.toInt() }
-        }
-        .flatMap { (a, b) -> Point(a[0], a[1])..Point(b[0], b[1]) }
+        .map { it.split(" -> ", ",").map { it.toInt() } }
+        .flatMap { (x0, y0, x1, y1) -> Point(x0, y0)..Point(x1, y1) }
         .groupingBy { it }
         .eachCount()
         .count { it.value > 1 }
