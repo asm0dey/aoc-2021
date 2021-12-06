@@ -1,20 +1,13 @@
 fun main() {
     fun solve(input: List<String>, iterNum: Int): Long {
-        var timers = LongArray(9)
-        for (fish in input.first().split(",")) {
+        val timers = ArrayDeque<Long>(List(9) { 0 })
+
+        for (fish in input.first().split(","))
             timers[fish.toInt()]++
-        }
 
         repeat(iterNum) {
-            val next = LongArray(9)
-            for ((state, count) in timers.withIndex()) {
-                if (state == 0) {
-                    next[6] += count
-                    next[8] = count
-                } else
-                    next[state - 1] += count
-            }
-            timers = next
+            timers.addLast(timers.removeFirst())
+            timers[6] += timers[8]
         }
         return timers.sum()
     }
