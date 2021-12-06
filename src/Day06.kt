@@ -1,14 +1,14 @@
 fun main() {
     fun solve(input: List<String>, iterNum: Int): Long {
         var timers = LongArray(9)
-        for (it in input.first().split(",")) {
-            timers[it.toInt()]++
+        for (fish in input.first().split(",")) {
+            timers[fish.toInt()]++
         }
 
         repeat(iterNum) {
             val next = LongArray(9)
-            for ((state, count) in timers.withIndex()){
-                if (state - 1 == -1) {
+            for ((state, count) in timers.withIndex()) {
+                if (state == 0) {
                     next[6] += count
                     next[8] = count
                 } else
