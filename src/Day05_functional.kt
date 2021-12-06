@@ -14,14 +14,13 @@ value class Point(private val p: Pair<Int, Int>) {
 fun main() {
 
     operator fun Point.rangeTo(p: Point): Line {
-        val ys = (min(y, p.y)..max(y, p.y)).asSequence()
+        val ys = (min(y, p.y)..max(y, p.y))
         val xs = (min(x, p.x)..max(x, p.x)).asSequence()
-        val ysDown = (max(y, p.y) downTo min(y, p.y)).asSequence()
         return (
-                if (x == p.x) ys.map { x to it }
+                if (x == p.x) ys.asSequence().map { x to it }
                 else if (y == p.y) xs.map { it to y }
-                else if (x - p.x == y - p.y) xs.zip(ys)
-                else xs.zip(ysDown)
+                else if (x - p.x == y - p.y) xs.zip(ys.asSequence())
+                else xs.zip(ys.reversed().asSequence())
                 )
             .map { Point(it) }
     }

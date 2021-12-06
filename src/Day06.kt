@@ -1,14 +1,9 @@
 fun main() {
     fun solve(input: List<String>, iterNum: Int): Long {
         var timers = LongArray(9)
-        input.first()
-            .split(",")
-            .map { it.toInt() }
-            .groupingBy { it }
-            .eachCount()
-            .forEach { (state, count) ->
-                timers[state] = count.toLong()
-            }
+        for (it in input.first().split(",")) {
+            timers[it.toInt()]++
+        }
 
         repeat(iterNum) {
             val next = LongArray(9)
