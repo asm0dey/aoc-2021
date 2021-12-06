@@ -1,22 +1,27 @@
 fun main() {
     fun solve(input: List<String>, iterNum: Int): Long {
-        var timers = input.first()
-                .split(",")
-                .map { it.toInt() }
-                .groupingBy { it }
-                .eachCount()
-                .mapValues { it.value.toLong() }
-        repeat(iterNum) {
-            timers = timers.flatMap { (i, count) ->
-                if (i - 1 == -1)
-                    listOf(6 to count, 8 to count)
-                else
-                    listOf(i - 1 to count)
+        var timers = LongArray(9)
+        input.first()
+            .split(",")
+            .map { it.toInt() }
+            .groupingBy { it }
+            .eachCount()
+            .forEach { (t, u) ->
+                timers[t] = u.toLong()
             }
-                .groupBy { it.first }
-                .mapValues { it.value.map { it.second }.sum() }
+
+        repeat(iterNum) {
+            val next = LongArray(9)
+            timers
+                .flatMapIndexed { i, count ->
+                    if (i - 1 == -1) listOf(6 to count, 8 to count)
+                    else listOf(i - 1 to count)
+                }
+                .forEach { next[it.first] += it.second }
+            timers = next
+            println(timers.contentToString())
         }
-        return timers.values.sum()
+        return timers.sum()
     }
 
 
