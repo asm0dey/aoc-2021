@@ -6,20 +6,20 @@ fun main() {
             .map { it.toInt() }
             .groupingBy { it }
             .eachCount()
-            .forEach { (t, u) ->
-                timers[t] = u.toLong()
+            .forEach { (state, count) ->
+                timers[state] = count.toLong()
             }
 
         repeat(iterNum) {
             val next = LongArray(9)
-            timers
-                .flatMapIndexed { i, count ->
-                    if (i - 1 == -1) listOf(6 to count, 8 to count)
-                    else listOf(i - 1 to count)
-                }
-                .forEach { next[it.first] += it.second }
+            for ((state, count) in timers.withIndex()){
+                if (state - 1 == -1) {
+                    next[6] += count
+                    next[8] = count
+                } else
+                    next[state - 1] += count
+            }
             timers = next
-            println(timers.contentToString())
         }
         return timers.sum()
     }
