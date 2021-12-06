@@ -17,10 +17,13 @@ fun main() {
         val ys = (min(y, p.y)..max(y, p.y)).asSequence()
         val xs = (min(x, p.x)..max(x, p.x)).asSequence()
         val ysDown = (max(y, p.y) downTo min(y, p.y)).asSequence()
-        return (if (x == p.x) ys.map { x to it }
-        else if (y == p.y) xs.map { it to y }
-        else if (x - p.x == y - p.y) xs.zip(ys)
-        else xs.zip(ysDown)).map { Point(it) }
+        return (
+                if (x == p.x) ys.map { x to it }
+                else if (y == p.y) xs.map { it to y }
+                else if (x - p.x == y - p.y) xs.zip(ys)
+                else xs.zip(ysDown)
+                )
+            .map { Point(it) }
     }
 
     fun part1(input: List<String>) = input
