@@ -2,8 +2,8 @@ import kotlin.math.abs
 
 fun main() {
     fun part1(input: List<String>): Int {
-        val positions = input.first().split(',').map { it.toInt() }.sorted()
-        return (positions.first()..positions.last())
+        val positions = input.first().split(',').map { it.toInt() }
+        return (positions.minOf { it }..positions.maxOf { it })
             .asSequence()
             .map { position ->
                 positions.sumOf { abs(it - position) }
@@ -12,8 +12,8 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        val positions = input.first().split(',').map { it.toInt() }.sorted()
-        return (positions.first()..positions.last())
+        val positions = input.first().split(',').map { it.toInt() }
+        return (positions.minOf { it }..positions.maxOf { it })
             .asSequence()
             .map { position ->
                 positions.map { abs(position - it) }.sumOf { (it + 1) * it / 2 }
