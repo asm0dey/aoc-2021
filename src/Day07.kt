@@ -2,7 +2,7 @@ import kotlin.math.abs
 
 fun main() {
     fun part1(input: List<String>): Int {
-        val positions = input.first().split(',').map { it.toInt() }
+        val positions = input.first().split(',').map { it.toInt() }.asSequence()
         return (positions.minOf { it }..positions.maxOf { it })
             .asSequence()
             .map { position ->
@@ -12,7 +12,7 @@ fun main() {
     }
 
     fun part2(input: List<String>): Int {
-        val positions = input.first().split(',').map { it.toInt() }
+        val positions = input.first().split(',').map { it.toInt() }.asSequence()
         return (positions.minOf { it }..positions.maxOf { it })
             .asSequence()
             .map { position ->
