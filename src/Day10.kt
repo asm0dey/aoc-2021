@@ -1,5 +1,3 @@
-import java.io.File
-
 fun main() {
     fun part1(input: List<String>): Long {
         val rules = mapOf('[' to ']', '(' to ')', '<' to '>', '{' to '}')
@@ -39,14 +37,15 @@ fun main() {
                 }
             }
             .sorted()
+            .toLongArray()
         return result[result.size / 2]
     }
 
     // test if implementation meets criteria from the description, like:
-    val testInput = File("src", "${"Day10_test"}.txt").readLines()
+    val testInput = readInput("Day10_test")
     check(part1(testInput) == 26397L)
 
-    val input = File("src", "${"Day10"}.txt").readLines()
+    val input = readInput("Day10")
     println(part1(input))
 
     check(part2(testInput) == 288957L)
