@@ -40,7 +40,7 @@ fun main() {
             }
         }
 
-        fun findBasin(coord: Pair<Int, Int>, visited: MutableSet<Pair<Int, Int>>) {
+        fun findBasin(coord: Pair<Int, Int>, visited: MutableSet<Pair<Int, Int>> = hashSetOf()): Set<Pair<Int, Int>> {
             val toVisit = sequenceOf(coord.first - 1 to coord.second,
                 coord.first + 1 to coord.second,
                 coord.first to coord.second - 1,
@@ -52,12 +52,11 @@ fun main() {
             for (point in toVisit) {
                 findBasin(point, visited)
             }
+            return visited
         }
 
         return lower.map {
-            val visited = hashSetOf<Pair<Int, Int>>()
-            findBasin(it, visited)
-            visited.size
+            findBasin(it).size
         }
             .sorted()
             .takeLast(3)
