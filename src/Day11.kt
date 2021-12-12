@@ -23,11 +23,10 @@ fun main() {
     }
 
     fun Array<IntArray>.decreaseFlashed() {
-        for (i in indices) {
-            for (j in this[0].indices) {
-                if (this[i][j] > 9) this[i][j] = 0
-            }
-        }
+        for (i in indices)
+            for (j in this[0].indices)
+                if (this[i][j] > 9)
+                    this[i][j] = 0
     }
 
     fun findFlashers(data: Array<IntArray>, alreadyFlashed: Set<Pair<Int, Int>>) = sequence {
