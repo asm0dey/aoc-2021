@@ -41,7 +41,7 @@ fun main() {
         val maxY = transparency.maxByOrNull { it.second }!!
         for (y in 0..maxY.second) {
             for (x in 0..maxX.first) {
-                print(if (transparency.contains(x to y)) '▓' else ' ')
+                print(if (transparency.contains(x to y)) '█' else ' ')
             }
             print('\n')
         }
