@@ -1,5 +1,3 @@
-import kotlin.math.abs
-
 fun main() {
     fun parseInput(input: List<String>): HashSet<Pair<Int, Int>> = input
         .asSequence()
@@ -15,14 +13,14 @@ fun main() {
                 .filter { it.first > amount }
                 .forEach {
                     transparency.remove(it)
-                    transparency.add(it.copy(first = amount - abs(it.first - amount)))
+                    transparency.add((amount * 2 - it.first) to it.second)
                 }
         } else if (direction == "y") {
             transparency
                 .filter { it.second > amount }
                 .forEach {
                     transparency.remove(it)
-                    transparency.add(it.copy(second = amount - abs(it.second - amount)))
+                    transparency.add(it.first to (amount * 2 - it.second))
                 }
         }
     }
@@ -40,10 +38,10 @@ fun main() {
             .filter { it.matches(Regex("fold.*")) }
             .forEach { processFold(it, transparency) }
         val maxX = transparency.maxByOrNull { it.first }!!
-        val maxy = transparency.maxByOrNull { it.second }!!
-        for (y in 0..maxy.second) {
+        val maxY = transparency.maxByOrNull { it.second }!!
+        for (y in 0..maxY.second) {
             for (x in 0..maxX.first) {
-                print(if (transparency.contains(x to y)) '#' else ' ')
+                print(if (transparency.contains(x to y)) '▓' else ' ')
             }
             print('\n')
         }
