@@ -5,29 +5,24 @@ fun main() {
         .map { it.split(',').map { num -> num.toInt() } }
         .mapTo(hashSetOf()) { (a, b) -> a to b }
 
-    fun processFold(str: String, transparency: HashSet<Pair<Int, Int>>) {
+    fun HashSet<Pair<Int, Int>>.fold(str: String) {
         val (direction, amountString) = str.split(' ').last().split('=')
         val amount = amountString.toInt()
-        if (direction == "x") {
-            transparency
-                .filter { it.first > amount }
-                .forEach {
-                    transparency.remove(it)
-                    transparency.add((amount * 2 - it.first) to it.second)
-                }
-        } else if (direction == "y") {
-            transparency
-                .filter { it.second > amount }
-                .forEach {
-                    transparency.remove(it)
-                    transparency.add(it.first to (amount * 2 - it.second))
-                }
+        filter {
+            if (direction == "x") it.first > amount
+            else it.second > amount
+        }.forEach {
+            remove(it)
+            if (direction == "x")
+                add((amount * 2 - it.first) to it.second)
+            else if (direction == "y")
+                add(it.first to (amount * 2 - it.second))
         }
     }
 
     fun part1(input: List<String>): Int {
         val transparency = parseInput(input)
-        processFold(input.first { it.matches(Regex("fold.*")) }, transparency)
+        transparency.fold(input.first { it.matches(Regex("fold.*")) })
         return transparency.size
     }
 
@@ -36,13 +31,12 @@ fun main() {
 
         input
             .filter { it.matches(Regex("fold.*")) }
-            .forEach { processFold(it, transparency) }
+            .forEach { transparency.fold(it) }
         val maxX = transparency.maxByOrNull { it.first }!!
         val maxY = transparency.maxByOrNull { it.second }!!
         for (y in 0..maxY.second) {
-            for (x in 0..maxX.first) {
+            for (x in 0..maxX.first)
                 print(if (transparency.contains(x to y)) '█' else ' ')
-            }
             print('\n')
         }
     }
