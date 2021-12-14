@@ -13,9 +13,6 @@ fun main() {
         val freqs = (0 until iterations)
             .fold(source) { it, _ ->
                 it
-                    //  ABC
-                    //      AXB BYC
-                    //          AX BY C
                     .windowed(2, partialWindows = true) {
                         if (it.length == 2)
                             "${it[0]}${replacements[it.toString()]}"
@@ -57,9 +54,6 @@ fun main() {
             .groupBy { (char, _) -> char }
             .mapValues { (_, listCounts) -> listCounts.sumOf { (_, count) -> count } }
             .mapValues { (char, count) ->
-                //  AN
-                //    AX XN    (AXN)
-                //        AA AX XB BX XN NN (AAXBXNN)
                 if (char == source.first() || char == source.last()) (count + 1) / 2
                 else count / 2
             }
