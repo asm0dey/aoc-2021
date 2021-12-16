@@ -37,7 +37,7 @@ fun main() {
     fun MutableMap<Point, Int>.adj(it: Point) =
         sequenceOf(it.copy(x = it.x - 1), it.copy(x = it.x + 1), it.copy(y = it.y + 1), it.copy(y = it.y - 1))
             .filter { contains(it) }
-            .map { State(it, this[it]!!) }
+            .map { State(it, getValue(it)) }
 
     fun part1(input: List<String>): Int {
         val field = parseField(input).toMutableMap()
@@ -50,10 +50,10 @@ fun main() {
         for (y in 0 until input.size * 5) {
             for (x in 0 until input[0].length * 5) {
                 if (contains(Point(x, y))) continue
-                val incrX = x / input[0].length
                 val tarX = x % input[0].length
-                val incrY = y / input.size
                 val tarY = y % input.size
+                val incrX = x / input[0].length
+                val incrY = y / input.size
                 var cur = this[Point(tarX, tarY)]!! + incrX + incrY
                 if (cur % 9 != 0) cur %= 9
                 this[Point(x, y)] = cur
