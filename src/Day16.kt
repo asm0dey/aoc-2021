@@ -5,6 +5,7 @@ sealed interface Packet {
     val type: Int
     val length: Int
     val value: Long
+    val typeName:String
 
     companion object {
         fun Operator(version: Int, type: Int, packets: List<Packet>, lengthTypeId: Char): Operator = when (type) {
@@ -26,6 +27,7 @@ sealed interface Packet {
     ) : Packet {
         override val length: Int = 3 + 3 + (data.length / 4) + data.length
         override val value get() = data.toLong(2)
+        override val typeName = "Literal"
     }
 
 
@@ -43,6 +45,7 @@ sealed interface Packet {
         override val lengthTypeId: Char,
     ) : Operator {
         override val value = packets.sumOf { it.value }
+        override val typeName = "Sum"
     }
 
     data class Product(
@@ -52,6 +55,7 @@ sealed interface Packet {
         override val lengthTypeId: Char,
     ) : Operator {
         override val value = packets.map { it.value }.reduce { a, b -> a * b }
+        override val typeName = "Product"
     }
 
     data class Min(
@@ -61,6 +65,7 @@ sealed interface Packet {
         override val lengthTypeId: Char,
     ) : Operator {
         override val value = packets.map { it.value }.minOf { it }
+        override val typeName = "Min"
     }
 
     data class Max(
@@ -70,6 +75,7 @@ sealed interface Packet {
         override val lengthTypeId: Char,
     ) : Operator {
         override val value = packets.map { it.value }.maxOf { it }
+        override val typeName = "Max"
     }
 
     data class GT(
@@ -82,6 +88,7 @@ sealed interface Packet {
             check(packets.size == 2)
             if (packets.first().value > packets[1].value) 1 else 0
         }
+        override val typeName = "GreaterThen"
     }
 
     data class LT(
@@ -94,6 +101,7 @@ sealed interface Packet {
             check(packets.size == 2)
             if (packets.first().value < packets[1].value) 1 else 0
         }
+        override val typeName = "Less Then"
     }
 
     data class EQ(
@@ -106,6 +114,7 @@ sealed interface Packet {
             check(packets.size == 2)
             if (packets.first().value == packets[1].value) 1 else 0
         }
+        override val typeName = "Equals"
     }
 
 }
@@ -165,7 +174,9 @@ fun main() {
         return result
     }
 
-    fun part2(input: String) = ArrayDeque(input.hexaDecimalToBinary()).parsePacket().value
+    fun part2(input: String): Long {
+        return ArrayDeque(input.hexaDecimalToBinary()).parsePacket().value
+    }
 
     check(part1("8A004A801A8002F478") == 16)
     check(part1("620080001611562C8802118E34") == 12)
