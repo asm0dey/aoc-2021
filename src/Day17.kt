@@ -1,3 +1,5 @@
+import kotlin.math.sign
+
 fun main() {
     fun tryVelocity(
         initialX: Int,
@@ -6,17 +8,18 @@ fun main() {
         targetY: IntRange,
         onHit: (maxY: Int) -> Unit,
     ) {
-        var velocity = initialX to initialY
-        var position = 0 to 0
+        var x = 0
+        var y = 0
+        var vx = initialX
+        var vy = initialY
         var maxY = Int.MIN_VALUE
-        while (position.first < targetX.last && position.second > targetY.first) {
-            position = (position.first + velocity.first) to (position.second + velocity.second)
-            if (position.second > maxY) maxY = position.second
-            velocity = Pair(
-                if (velocity.first > 0) velocity.first - 1 else if (velocity.first == 0) 0 else velocity.first + 1,
-                velocity.second - 1
-            )
-            if (position.first in targetX && position.second in targetY) {
+        while (x < targetX.last && y > targetY.first) {
+            x += vx
+            y += vy
+            if (y > maxY) maxY = y
+            vx -= vx.sign
+            vy -= 1
+            if (x in targetX && y in targetY) {
                 onHit(maxY)
                 break
             }
@@ -24,10 +27,10 @@ fun main() {
     }
 
     fun parseInput(input: String): Pair<IntRange, IntRange> {
-        val split = input.split(",", " ", "=", "..")
-        val x = split[3].toInt()..split[4].toInt()
-        val y = split[7].toInt()..split[8].toInt()
-        return Pair(x, y)
+        val split = "-?\\d+".toRegex().findAll(input).map { it.value.toInt() }.toList()
+        val x = split[0]..split[1]
+        val y = split[2]..split[3]
+        return x to y
     }
 
     fun part1(input: String): Int {
