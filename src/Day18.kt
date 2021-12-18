@@ -1,6 +1,5 @@
 import BracketExpression.ExprPair
 import BracketExpression.Leaf
-import com.fasterxml.jackson.annotation.JsonTypeInfo
 import com.github.h0tk3y.betterParse.combinators.map
 import com.github.h0tk3y.betterParse.combinators.or
 import com.github.h0tk3y.betterParse.combinators.times
@@ -13,12 +12,7 @@ import com.github.h0tk3y.betterParse.lexer.regexToken
 import com.github.h0tk3y.betterParse.parser.Parser
 import kotlin.math.ceil
 import kotlin.math.floor
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 
-val mapper = jacksonObjectMapper()
-
-@JsonTypeInfo(use = JsonTypeInfo.Id.NAME)
 private sealed interface BracketExpression {
     fun addToLeftMost(second: Int?): BracketExpression
     fun addToRightMost(second: Int?): BracketExpression
@@ -202,15 +196,11 @@ fun main() {
             }
     }
 
-    fun ExprPair.deepCopy(): ExprPair {
-        return mapper.readValue(mapper.writeValueAsString(this))
-    }
-
     fun cartesianProduct(a: List<ExprPair>, b: List<ExprPair>): Sequence<Pair<ExprPair, ExprPair>> = sequence {
         for (x in a) {
             for (y in b) {
                 if (x == y) continue
-                yield(x.deepCopy() to y.deepCopy())
+                yield(x to y)
             }
         }
     }
@@ -226,7 +216,6 @@ fun main() {
 
     }
 
-    // test if implementation meets criteria from the description, like:
     fun String.reducedOnce(): ExprPair {
         return pairParser.parseToEnd(this).reduce().first
     }
@@ -239,6 +228,7 @@ fun main() {
         return pairParser.parseToEnd(this).split()
     }
 
+    // test if implementation meets criteria from the description, like:
     check("[[[[[9,8],1],2],3],4]".reducedOnce().toString() == "[[[[0,9],2],3],4]")
     check("[7,[6,[5,[4,[3,2]]]]]".reducedOnce().toString() == "[7,[6,[5,[7,0]]]]")
     check("[[6,[5,[4,[3,2]]]],1]".reducedOnce().toString() == "[[6,[5,[7,0]]],3]")
