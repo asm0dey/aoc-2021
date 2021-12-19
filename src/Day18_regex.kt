@@ -7,26 +7,24 @@ fun main() {
         var current = source
         var findAll = numberPair.findAll(current)
         while (findAll.any()) {
-            findAll
-                .forEach {
-                    val (fst, snd) = it.destructured
-                    val mag = (fst.toInt() * 3) + (snd.toInt() * 2)
-                    current = current.replace(it.value, mag.toString())
-                }
+            for (match in findAll) {
+                val (fst, snd) = match.destructured
+                val mag = (fst.toInt() * 3) + (snd.toInt() * 2)
+                current = current.replace(match.value, mag.toString())
+            }
             findAll = numberPair.findAll(current)
         }
         return current.toInt()
     }
 
+    fun String.countOpen(res: MatchResult) =
+        subSequence(0 until res.range.first)
+            .map { if (it == '[') 1 else if (it==']') -1 else 0 }
+            .sum()
+
     fun reduce(source: String): String {
         val match = numberPair.findAll(source)
-            .firstOrNull { res ->
-                source
-                    .subSequence(0 until res.range.first)
-                    .filter { it == '[' || it == ']' }
-                    .map { if (it == '[') 1 else -1 }
-                    .sum() >= 4
-            } ?: return source
+            .firstOrNull { source.countOpen(it) >= 4 } ?: return source
         val (d1, d2) = match.destructured
         val before = "\\d+".toRegex().findAll(source.substring(0, match.range.first)).lastOrNull()
         val after = "\\d+".toRegex().find(source, match.range.last)
@@ -62,17 +60,7 @@ fun main() {
     fun reduceMax(s: String): String {
         var current = s
         while (true) {
-            val reduced = reduce(current)
-            if (reduced != current) {
-                current = reduced
-                continue
-            }
-            val split = split(current)
-            if (split != current) {
-                current = split
-                continue
-            }
-            break
+            current = reduce(current).takeIf { it != current } ?: split(current).takeIf { it != current } ?: break
         }
         return current
     }
