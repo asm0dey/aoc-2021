@@ -40,32 +40,33 @@ fun main() {
         listOf(-1, -1, -1),
     )
 
-    fun rotatePoint(negation: List<Int>, it: Point3D, remap: List<Int>) = Point3D(
-        negation[0] * it[remap[0]], negation[1] * it[remap[1]], negation[2] * it[remap[2]],
+    fun Point3D.rotate(negation: List<Int>, remap: List<Int>) = Point3D(
+        negation[0] * this[remap[0]], negation[1] * this[remap[1]], negation[2] * this[remap[2]],
     )
 
-    fun findAlignment(
+    fun tryAlign(
         firstScan: List<Point3D>,
         secondScan: List<Point3D>,
         distancesFromScan0: ArrayList<Point3D>,
     ): ArrayList<Point3D>? {
         val firstScanSet = HashSet(firstScan)
         val allRemapped = ArrayList<Point3D>(maxOf(firstScan.size, secondScan.size))
-        for (remap in coordRemaps) {
-            for (negation in coordNegations) {
-                val rotation = secondScan.map { rotatePoint(negation, it, remap) }
+        for (negation in coordNegations) {
+            for (remap in coordRemaps) {
+                val rotation = secondScan.map { it.rotate(negation, remap) }
                 for (a in firstScan) {
                     for (b1 in rotation) {
                         var matches = 0
                         allRemapped.clear()
+                        val relativeToA = b1 - a
                         for (b2 in rotation) {
-                            val remappedToA = b2 - b1 + a
+                            val remappedToA = b2 - relativeToA
                             if (firstScanSet.contains(remappedToA)) matches++
                             allRemapped.add(remappedToA)
                         }
                         if (matches >= 12) {
-                            println("Match: ${b1 - a}")
-                            distancesFromScan0.add(b1 - a)
+                            println("Match: $relativeToA")
+                            distancesFromScan0.add(relativeToA)
                             return allRemapped
                         }
                     }
@@ -92,7 +93,7 @@ fun main() {
                 for (j in alignedIndices) {
 //                    println("Checking $i against $j")
                     if (noalign.contains(i to j)) continue
-                    val remap = findAlignment(aligned[j]!!, scans[i], distancesFromScan0)
+                    val remap = tryAlign(aligned[j]!!, scans[i], distancesFromScan0)
                     if (remap != null) {
                         alignedIndices.add(i)
                         aligned[i] = remap
@@ -117,9 +118,7 @@ fun main() {
     // test if implementation meets criteria from the description, like:
     val testInput = asText("Day19_test")
     val input = asText("Day19")
-//    check(solve(testInput) == 79 to 3621)
-    println(measureTimeMillis {
-        println(solve(input))
-    })
+    check(solve(testInput) == 79 to 3621)
+    println(solve(input))
 }
 
