@@ -3,18 +3,9 @@ import kotlin.system.measureTimeMillis
 
 fun main() {
 
-    data class Point3D(val x: Int, val y: Int, val z: Int) : Comparable<Point3D> {
+    data class Point3D(val x: Int, val y: Int, val z: Int) {
         override fun toString(): String {
             return "($x,$y,$z)"
-        }
-
-        override fun compareTo(other: Point3D): Int {
-            val dx = x.compareTo(other.x)
-            return if (dx != 0) dx
-            else {
-                val dy = y.compareTo(other.y)
-                if (dy != 0) dy else z.compareTo(other.z)
-            }
         }
 
         operator fun get(index: Int): Int {
