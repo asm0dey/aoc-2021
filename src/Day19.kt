@@ -44,30 +44,33 @@ fun main() {
         negation[0] * this[remap[0]], negation[1] * this[remap[1]], negation[2] * this[remap[2]],
     )
 
+    val defaultPoint = Point3D(0, 0, 0)
+
     fun tryAlign(
         firstScan: List<Point3D>,
         secondScan: List<Point3D>,
         distancesFromScan0: ArrayList<Point3D>,
-    ): ArrayList<Point3D>? {
+    ): List<Point3D>? {
         val firstScanSet = HashSet(firstScan)
-        val allRemapped = ArrayList<Point3D>(maxOf(firstScan.size, secondScan.size))
+        val allRemapped = Array(secondScan.size) { defaultPoint }
+        var pointer: Int
         for (negation in coordNegations) {
             for (remap in coordRemaps) {
                 val rotation = secondScan.map { it.rotate(negation, remap) }
                 for (a in firstScan) {
                     for (b1 in rotation) {
                         var matches = 0
-                        allRemapped.clear()
+                        pointer = 0
                         val relativeToA = b1 - a
                         for (b2 in rotation) {
                             val remappedToA = b2 - relativeToA
                             if (firstScanSet.contains(remappedToA)) matches++
-                            allRemapped.add(remappedToA)
+                            allRemapped[pointer++] = remappedToA
                         }
                         if (matches >= 12) {
                             println("Match: $relativeToA")
                             distancesFromScan0.add(relativeToA)
-                            return allRemapped
+                            return allRemapped.take(pointer)
                         }
                     }
                 }
@@ -119,6 +122,8 @@ fun main() {
     val testInput = asText("Day19_test")
     val input = asText("Day19")
     check(solve(testInput) == 79 to 3621)
-    println(solve(input))
+    repeat(10) {
+        println(measureTimeMillis { println(solve(input)) })
+    }
 }
 
