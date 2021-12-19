@@ -1,5 +1,7 @@
 import BracketExpression.ExprPair
 import BracketExpression.Leaf
+import BracketExpression.ReductionResult.Empty
+import BracketExpression.ReductionResult.Left
 import com.github.h0tk3y.betterParse.combinators.map
 import com.github.h0tk3y.betterParse.combinators.or
 import com.github.h0tk3y.betterParse.combinators.times
@@ -14,6 +16,48 @@ import kotlin.math.ceil
 import kotlin.math.floor
 
 private sealed interface BracketExpression {
+    sealed interface ReductionResult {
+        data class Left(override val left: Int) : ReductionResult {
+            override val removeRight
+                get() = error("No second in Left")
+            override val removeLeft = Empty
+            override val hasLeft = true
+            override val hasRight = false
+            override val right: Int
+                get() = error("No second in Left")
+        }
+
+        data class Right(override val right: Int) : ReductionResult {
+            override val removeRight = Empty
+            override val removeLeft
+                get() = error("Right has no first")
+            override val hasLeft = false
+            override val hasRight = true
+            override val left: Int
+                get() = error("Right has no first")
+        }
+
+        object Empty : ReductionResult {
+            override val removeRight: ReductionResult
+                get() = error("Empty has no second")
+            override val removeLeft: ReductionResult
+                get() = error("Empty has no first")
+            override val hasLeft = false
+            override val hasRight = false
+            override val left: Int
+                get() = error("Empty has no first")
+            override val right: Int
+                get() = error("Empty has no second")
+        }
+
+        val removeRight: ReductionResult
+        val removeLeft: ReductionResult
+        val hasLeft: Boolean
+        val hasRight: Boolean
+        val left:Int
+        val right:Int
+    }
+
     fun addToLeftMost(second: Int?): BracketExpression
     fun addToRightMost(second: Int?): BracketExpression
 
@@ -55,30 +99,31 @@ private sealed interface BracketExpression {
         }
 
         override fun addToLeftMost(second: Int?): BracketExpression {
-            if (second == null) return this
-            val nl = left.addToLeftMost(second)
-            return copy(left = nl)
+            return if (second == null) this
+            else copy(left = left.addToLeftMost(second))
         }
 
         override fun addToRightMost(second: Int?): BracketExpression {
-            if (second == null) return this
-            val nr = right.addToRightMost(second)
-            return copy(right = nr)
+            return if (second == null) this
+            else copy(right = right.addToRightMost(second))
         }
 
         fun split(): ExprPair {
             if (left is Leaf && left.num > 9) {
-                return copy(left = ExprPair(Leaf(floor(left.num.toDouble() / 2).toInt()),
-                    Leaf(ceil(left.num.toDouble() / 2).toInt())))
+                return copy(left = ExprPair(
+                    Leaf(floor(left.num.toDouble() / 2).toInt()),
+                    Leaf(ceil(left.num.toDouble() / 2).toInt())
+                ))
             }
             if (left is ExprPair) {
                 val nl = left.split()
                 if (nl != left) return copy(left = nl)
             }
             if (right is Leaf && right.num > 9) {
-                val current = right.num
-                return copy(right = ExprPair(Leaf(floor(current.toDouble() / 2).toInt()),
-                    Leaf(ceil(current.toDouble() / 2).toInt())))
+                return copy(right = ExprPair(
+                    Leaf(floor(right.num.toDouble() / 2).toInt()),
+                    Leaf(ceil(right.num.toDouble() / 2).toInt())
+                ))
             }
             if (right is ExprPair) {
                 val nr = right.split()
@@ -88,19 +133,18 @@ private sealed interface BracketExpression {
         }
 
         operator fun plus(other: BracketExpression) = ExprPair(this, other)
-
-        fun reduce(level: Int = 0): Pair<ExprPair, Pair<Int, Int>> {
+        fun reduce(level: Int = 0): Pair<ExprPair, ReductionResult> {
             if (level > 2) {
                 if (left is ExprPair && left.left is Leaf && left.right is Leaf) {
-                    val result = Pair(left.left.num, left.right.num)
-                    val nl = Leaf(0)
-                    val nr = right.addToLeftMost(result.second)
-                    return copy(left = nl, right = nr) to (result.first to 0)
+                    return copy(
+                        left = Leaf(0),
+                        right = right.addToLeftMost(left.right.num)
+                    ) to Left(left.left.num)
                 } else if (right is ExprPair && right.left is Leaf && right.right is Leaf) {
-                    val result = right.left.num to right.right.num
-                    val nr = Leaf(0)
-                    val nl = left.addToRightMost(result.first)
-                    return copy(left = nl, right = nr) to (0 to result.second)
+                    return copy(
+                        left = left.addToRightMost(right.left.num),
+                        right = Leaf(0)
+                    ) to ReductionResult.Right(right.right.num)
                 } else if (left is ExprPair) {
                     val (nl, result) = tryReduceLeft(level)
                     if (nl.left != left) return copy(left = nl) to result
@@ -118,34 +162,34 @@ private sealed interface BracketExpression {
                 if (nr != this) return nr to result
                 return this to result
             }
-            return this to (0 to 0)
+            return this to Empty
         }
 
-        private fun tryReduceLeft(level: Int): Pair<ExprPair, Pair<Int, Int>> {
+        private fun tryReduceLeft(level: Int): Pair<ExprPair, ReductionResult> {
             val (nl, result) = (left as ExprPair).reduce(level + 1)
-            if (nl != left && result.second != 0) {
+            if (nl != left && result.hasRight) {
                 return if (right is Leaf) {
-                    val nr = right.copy(num = right.num + result.second)
-                    copy(left = nl, right = nr) to result.copy(second = 0)
+                    val nr = right.copy(num = right.num + result.right)
+                    copy(left = nl, right = nr) to result.removeRight
                 } else {
-                    val nr = right.addToLeftMost(result.second)
-                    copy(left = nl, right = nr) to (0 to 0)
+                    val nr = right.addToLeftMost(result.right)
+                    copy(left = nl, right = nr) to Empty
                 }
             }
             return copy(left = nl) to result
         }
 
-        private fun tryReduceRight(level: Int): Pair<ExprPair, Pair<Int, Int>> {
+        private fun tryReduceRight(level: Int): Pair<ExprPair, ReductionResult> {
             val (nr, result) = (right as ExprPair).reduce(level + 1)
-            if (nr != right && result.first != 0)
+            if (nr != right && result.hasLeft)
                 return when (left) {
                     is Leaf -> {
-                        val nl = left.copy(num = left.num + result.first)
-                        copy(left = nl, right = nr) to result.copy(first = 0)
+                        val nl = left.copy(num = left.num + result.left)
+                        copy(left = nl, right = nr) to result.removeLeft
                     }
                     is ExprPair -> {
-                        val nl = left.addToRightMost(result.first)
-                        copy(left = nl, right = nr) to (0 to 0)
+                        val nl = left.addToRightMost(result.left)
+                        copy(left = nl, right = nr) to Empty
                     }
                 }
             return copy(right = nr) to result
