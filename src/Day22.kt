@@ -64,25 +64,17 @@ fun main() {
                 val zs = command[8].toInt()..command[9].toInt()
                 Cuboid(xs, ys, zs, command[0] == "on")
             }
-            .fold(emptyList<Cuboid>()) { currentCuboids, cube ->
+            .fold(emptyList<Cuboid>()) { currentCuboids, incomingCuboid ->
                 if (currentCuboids.isEmpty())
-                    return@fold listOf(cube)
-                val newCubes = arrayListOf<Cuboid>()
+                    return@fold listOf(incomingCuboid)
+                val newCuboids = arrayListOf<Cuboid>()
                 for (currentCuboid in currentCuboids) {
-                    newCubes.add(currentCuboid)
-                    val intersection = currentCuboid.intersect(cube) ?: continue
-                    if (currentCuboid.state) {
-                        if (intersection.state) {
-                            newCubes.add(intersection.copy(state = false))
-                        } else {
-                            newCubes.add(intersection)
-                        }
-                    } else {
-                        newCubes.add(intersection.copy(state = true))
-                    }
+                    newCuboids.add(currentCuboid)
+                    val intersection = currentCuboid.intersect(incomingCuboid) ?: continue
+                    newCuboids.add(intersection.copy(state = !currentCuboid.state))
                 }
-                if (cube.state) newCubes.add(cube)
-                newCubes
+                if (incomingCuboid.state) newCuboids.add(incomingCuboid)
+                newCuboids
             }
         return result.sumOf { it.size }
     }
