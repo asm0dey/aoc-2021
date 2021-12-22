@@ -1,3 +1,4 @@
+import java.io.File
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -56,7 +57,7 @@ fun main() {
     }
 
     fun part2(input: List<String>): Long {
-        val result = input.map { it.split("..", "=", ",", " ") }
+        return input.map { it.split("..", "=", ",", " ") }
             .asSequence()
             .map { command ->
                 val xs = command[2].toInt()..command[3].toInt()
@@ -64,28 +65,26 @@ fun main() {
                 val zs = command[8].toInt()..command[9].toInt()
                 Cuboid(xs, ys, zs, command[0] == "on")
             }
-            .fold(emptyList<Cuboid>()) { currentCuboids, incomingCuboid ->
-                if (currentCuboids.isEmpty())
-                    return@fold listOf(incomingCuboid)
-                val newCuboids = arrayListOf<Cuboid>()
-                for (currentCuboid in currentCuboids) {
-                    newCuboids.add(currentCuboid)
-                    val intersection = currentCuboid.intersect(incomingCuboid) ?: continue
-                    newCuboids.add(intersection.copy(state = !currentCuboid.state))
+            .fold(sequenceOf<Cuboid>()) { currentCuboids, incomingCuboid ->
+                sequence {
+                    for (currentCuboid in currentCuboids) {
+                        yield(currentCuboid)
+                        val intersection = currentCuboid.intersect(incomingCuboid) ?: continue
+                        yield(intersection.copy(state = !currentCuboid.state))
+                    }
+                    if (incomingCuboid.state) yield(incomingCuboid)
                 }
-                if (incomingCuboid.state) newCuboids.add(incomingCuboid)
-                newCuboids
             }
-        return result.sumOf { it.size }
+            .sumOf { it.size }
     }
 
     // test if implementation meets criteria from the description, like:
-    val testInput = readInput("Day22_test")
+    val testInput = File("src", "${"Day22_test"}.txt").readLines()
     check(part1(testInput) == 590784)
-    val input = readInput("Day22")
+    val input = File("src", "${"Day22"}.txt").readLines()
     println(part1(input))
-    println(part2(readInput("Day22_test3")))
-    println(part2(readInput("Day22_test2")))
+    println(part2(File("src", "${"Day22_test3"}.txt").readLines()))
+    println(part2(File("src", "${"Day22_test2"}.txt").readLines()))
     println(part2(input))
 }
 
