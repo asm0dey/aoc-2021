@@ -34,6 +34,7 @@ fun main() {
         }
         return dieRolled * min(player1Score, player2Score)
     }
+
     var count = 0
     var outcomesMemoized by notNull<(p1Pos: Int, p2Pos: Int, p1Score: Long, p2Score: Long, next: Boolean) -> Pair<Long, Long>>()
     fun countOutcomes(

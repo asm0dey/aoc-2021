@@ -130,9 +130,11 @@ fun main() {
     }
 
     fun ArrayDeque<Char>.getN(n: Int) = (0 until n).map { removeFirst() }.joinToString("")
+    fun ArrayDeque<Char>.getNAsInt(n: Int) = getN(n).toInt(2)
+
     fun ArrayDeque<Char>.parsePacket(): Packet {
-        val version = getN(3).toInt(2)
-        val type = getN(3).toInt(2)
+        val version = getNAsInt(3)
+        val type = getNAsInt(3)
         if (type == 4) {
             val result = StringBuilder()
             var counter = 0
@@ -146,11 +148,11 @@ fun main() {
         } else {
             val lengthTypeId = removeFirst()
             return if (lengthTypeId == '1') {
-                val subPacketsNumber = getN(11).toInt(2)
+                val subPacketsNumber = getNAsInt(11)
                 val subPackets = (0 until subPacketsNumber).map { parsePacket() }
                 Packet.Operator(version, type, subPackets, lengthTypeId)
             } else {
-                val totalSubPacketsLength = getN(15).toInt(2)
+                val totalSubPacketsLength = getNAsInt(15)
                 val children = arrayListOf<Packet>()
                 while (children.sumOf { it.length } < totalSubPacketsLength) {
                     children.add(parsePacket())
