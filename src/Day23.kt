@@ -16,28 +16,9 @@ fun main() {
 
     fun Map<Int, Char>.wayIsEmpty(range: IntProgression) = range.none { this[it] != null }
 
-    fun helper(hallway: Map<Int, Char>, rooms: List<List<Char?>>): Int {
-        val roomSize = rooms[0].size
-        if (rooms == listOf(roomSize times 'A', roomSize times 'B', roomSize times 'C', roomSize times 'D'))
-            return 0
-        var bestCost = 100000
-        for ((hallPlace, amphipod) in hallway) { // move from the hallway
-            val dest = destination[amphipod]!!
-            if (!rooms[dest].hasPlaceFor(amphipod)) continue
-            val startWalk = hallPlace + if (roomMap[dest] > hallPlace) 1 else -1
-            val endWalk = roomMap[dest]
-            val toCheck = if (startWalk < endWalk) startWalk until endWalk else startWalk downTo endWalk
-            if (!hallway.wayIsEmpty(toCheck)) continue
-            val emptyPlaces = rooms[dest].count { it == null }
-            val newRoom = List<Char?>(emptyPlaces - 1) { null } + List(roomSize - emptyPlaces + 1) { amphipod }
-            val newHall = hallway.filterNot { it.key == hallPlace }
-            val newRooms = rooms.subList(0, dest) + listOf(newRoom) + rooms.subList(dest + 1, rooms.size)
-            val steps = emptyPlaces + abs(hallPlace - roomMap[dest])
-            val newCost = steps * costs[amphipod]!! + memoizedHelper(newHall, newRooms)
-            if (newCost < bestCost)
-                bestCost = newCost
-        }
-        for ((i, room) in rooms.withIndex()) { // rooms to hallway
+    fun moveFromRoomToHallway(hallway: Map<Int, Char>, rooms: List<List<Char?>>, bestCost: Int): Int {
+        var nextBest = bestCost
+        for ((i, room) in rooms.withIndex()) {
             if (!room.any { it != null && destination[it] != i }) continue
             val emptyPlaces = room.count { it == null }
             val steps = emptyPlaces + 1
@@ -52,10 +33,41 @@ fun main() {
                 val newRooms = rooms.subList(0, i) + listOf(newRoom) + rooms.subList(i + 1, rooms.size)
                 val helperResult = memoizedHelper(newHall, newRooms)
                 val newCost = destinationCost + helperResult
-                if (newCost < bestCost)
-                    bestCost = newCost
+                if (newCost < nextBest)
+                    nextBest = newCost
             }
         }
+        return nextBest
+    }
+
+    fun moveFromHallwaysToRooms(hallway: Map<Int, Char>, rooms: List<List<Char?>>, roomSize: Int, bestCost: Int): Int {
+        var nextBest = bestCost
+        for ((hallPlace, amphipod) in hallway) {
+            val dest = destination[amphipod]!!
+            if (!rooms[dest].hasPlaceFor(amphipod)) continue
+            val startWalk = hallPlace + if (roomMap[dest] > hallPlace) 1 else -1
+            val endWalk = roomMap[dest]
+            val toCheck = if (startWalk < endWalk) startWalk until endWalk else startWalk downTo endWalk
+            if (!hallway.wayIsEmpty(toCheck)) continue
+            val emptyPlaces = rooms[dest].count { it == null }
+            val newRoom = List<Char?>(emptyPlaces - 1) { null } + List(roomSize - emptyPlaces + 1) { amphipod }
+            val newHall = hallway.filterNot { it.key == hallPlace }
+            val newRooms = rooms.subList(0, dest) + listOf(newRoom) + rooms.subList(dest + 1, rooms.size)
+            val steps = emptyPlaces + abs(hallPlace - roomMap[dest])
+            val newCost = steps * costs[amphipod]!! + memoizedHelper(newHall, newRooms)
+            if (newCost < nextBest)
+                nextBest = newCost
+        }
+        return nextBest
+    }
+
+    fun helper(hallway: Map<Int, Char>, rooms: List<List<Char?>>): Int {
+        val roomSize = rooms[0].size
+        if (rooms == listOf(roomSize times 'A', roomSize times 'B', roomSize times 'C', roomSize times 'D'))
+            return 0
+        var bestCost = 100000
+        bestCost = moveFromHallwaysToRooms(hallway, rooms, roomSize, bestCost)
+        bestCost = moveFromRoomToHallway(hallway, rooms, bestCost)
         return bestCost
     }
 
