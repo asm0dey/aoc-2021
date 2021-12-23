@@ -31,7 +31,7 @@ fun main() {
         return set.size
     }
 
-    data class Cuboid(val x: IntRange, val y: IntRange, val z: IntRange, val state: Boolean) {
+    data class Cuboid(val state: Boolean, val x: IntRange, val y: IntRange, val z: IntRange) {
         val size
             get() =
                 (if (state) 1L else -1L) *
@@ -53,29 +53,34 @@ fun main() {
         val yIntersection = max(maxY - minY + 1, 0)
         val zIntersection = max(maxZ - minZ + 1, 0)
         return if (xIntersection == 0 || yIntersection == 0 || zIntersection == 0) null
-        else Cuboid(minX..maxX, minY..maxY, minZ..maxZ, next.state)
+        else Cuboid(!state, minX..maxX, minY..maxY, minZ..maxZ)
     }
 
     fun part2(input: List<String>): Long {
-        return input.map { it.split("..", "=", ",", " ") }
+        var maxDepth = 0
+        val x = input.map { it.split("..", "=", ",", " ") }
             .asSequence()
             .map { command ->
                 val xs = command[2].toInt()..command[3].toInt()
                 val ys = command[5].toInt()..command[6].toInt()
                 val zs = command[8].toInt()..command[9].toInt()
-                Cuboid(xs, ys, zs, command[0] == "on")
+                Cuboid(command[0] == "on", xs, ys, zs)
             }
-            .fold(sequenceOf<Cuboid>()) { currentCuboids, incomingCuboid ->
-                sequence {
+            .fold(listOf<Cuboid>()) { currentCuboids, incomingCuboid ->
+                buildList {
                     for (currentCuboid in currentCuboids) {
-                        yield(currentCuboid)
+                        add(currentCuboid)
                         val intersection = currentCuboid.intersect(incomingCuboid) ?: continue
-                        yield(intersection.copy(state = !currentCuboid.state))
+                        add(intersection)
                     }
-                    if (incomingCuboid.state) yield(incomingCuboid)
+                    if (incomingCuboid.state) add(incomingCuboid)
                 }
             }
-            .sumOf { it.size }
+        println(x)
+        return x
+            .sumOf {
+                it.size
+            }
     }
 
     // test if implementation meets criteria from the description, like:
@@ -84,7 +89,7 @@ fun main() {
     val input = File("src", "${"Day22"}.txt").readLines()
     println(part1(input))
     println(part2(File("src", "${"Day22_test3"}.txt").readLines()))
-    println(part2(File("src", "${"Day22_test2"}.txt").readLines()))
-    println(part2(input))
+//    println(part2(File("src", "${"Day22_test2"}.txt").readLines()))
+//    println(part2(input))
 }
 
