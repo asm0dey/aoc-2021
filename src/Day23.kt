@@ -3,6 +3,7 @@ import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
 import kotlin.properties.Delegates.notNull
+import kotlin.system.measureTimeMillis
 
 fun main() {
     val roomMap = listOf(2, 4, 6, 8)
@@ -41,7 +42,7 @@ fun main() {
                 val destinationCost = destinationSteps * costs(amphipod)
                 val toCheck = min(hallDestination, roomMap[roomIndex])..max(hallDestination, roomMap[roomIndex])
                 if (!hallway.wayIsFree(toCheck)) continue
-                val newRoom = List<Char?>(emptyPlaces + 1) { null } + room.subList(emptyPlaces + 1, room.size)
+                val newRoom = room.mapIndexed { i, cur -> if (i == emptyPlaces) null else cur }
                 val newHall = hallway + (hallDestination to amphipod)
                 val newRooms = mapIndexed { i, cur -> if (roomIndex == i) newRoom else cur }
                 val helperResult = memoizedHelper(newHall, newRooms)
@@ -84,15 +85,24 @@ fun main() {
         return bestCost
     }
 
-    memoizedHelper = ::helper.memoize()
     fun solve(input: List<List<Char>>): Int {
+        memoizedHelper = ::helper.memoize()
         return memoizedHelper(mapOf(), input)
     }
 
     println(solve("BACDBCDA".chunked(2) { it.toList() }))
     println(solve("DDACCBAB".chunked(2) { it.toList() }))
     println(solve("BDDACCBDBBACDACA".chunked(4) { it.toList() }))
-    println(solve("DDDDACBCCBABAACB".chunked(4) { it.toList() }))
+    repeat(10){
+        println(measureTimeMillis {
+            println(solve("DDDDACBCCBABAACB".chunked(4) { it.toList() }))
+        })
+    }
+    repeat(10) {
+        println(measureTimeMillis {
+            println(solve("DDDBACBABBADCACC".chunked(4) { it.toList() }))
+        })
+    }
 }
 
 

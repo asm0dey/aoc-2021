@@ -121,9 +121,9 @@ fun main() {
     // test if implementation meets criteria from the description, like:
     val testInput = asText("Day19_test")
     val input = asText("Day19")
-    check(solve(testInput) == 79 to 3621)
-    repeat(10) {
+//    check(solve(testInput) == 79 to 3621)
+//    repeat(10) {
         println(measureTimeMillis { println(solve(input)) })
-    }
+//    }
 }
 
